@@ -5,8 +5,17 @@ export interface SpeechBubble {
   position?: 'left' | 'right' | 'bottom' | 'top' | 'center';
 }
 
+export type DiagramType = 
+  | 'none' 
+  | 'scroll' 
+  | 'network' 
+  | 'cards_compare' 
+  | 'table_compare' 
+  | 'bullet_list' 
+  | 'quote_highlight';
+
 export interface DiagramData {
-  type: 'none' | 'scroll' | 'network' | 'cards_compare' | 'table_compare' | 'bullet_list' | 'quote_highlight';
+  type: DiagramType;
   title?: string;
   items?: {
     label: string;
@@ -35,16 +44,19 @@ export interface ComicPanel {
   imageUrl?: string;
   imagePrompt?: string;
   badgeColor?: string;
+  characterGender?: 'male' | 'female';
 }
 
 export interface ComicHeaderDialogue {
   leftCharacter: {
     name?: string;
     dialogue: string;
+    gender?: 'male' | 'female';
   };
   rightCharacter: {
     name?: string;
     dialogue: string;
+    gender?: 'male' | 'female';
   };
 }
 
@@ -56,6 +68,7 @@ export interface ComicProject {
   audience: string;
   author: string;
   sourceNote?: string;
+  characterGender?: 'male' | 'female';
   headerDialogue: ComicHeaderDialogue;
   panels: ComicPanel[];
   createdAt?: string;
