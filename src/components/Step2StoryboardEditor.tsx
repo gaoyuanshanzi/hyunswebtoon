@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ComicProject, ComicPanel } from '@/types/comic';
+import { ComicProject, ComicPanel, DiagramType, DIAGRAM_TYPE_OPTIONS, getDefaultDiagramData } from '@/types/comic';
 import { 
   Sparkles, ArrowRight, ArrowLeft, Edit3, MessageSquare, 
-  Image as ImageIcon, CheckSquare, Layers, Quote, Table, HelpCircle 
+  Image as ImageIcon, CheckSquare, Quote, Table, ChevronDown 
 } from 'lucide-react';
 
 interface Step2StoryboardEditorProps {
@@ -51,9 +51,59 @@ export default function Step2StoryboardEditor({
     });
   };
 
+  // 도식 유형 변경 핸들러 (드롭다운)
+  const handleChangeDiagramType = (panelIdx: number, newType: DiagramType) => {
+    const updatedPanels = [...comic.panels];
+    const currentDiagram = updatedPanels[panelIdx].diagram;
+
+    if (newType === 'none') {
+      updatedPanels[panelIdx] = {
+        ...updatedPanels[panelIdx],
+        hasDiagram: false,
+        diagram: { type: 'none' },
+      };
+    } else {
+      const defaultData = getDefaultDiagramData(newType, updatedPanels[panelIdx].title);
+      // 기존 제목이나 강조문구가 있었다면 보존
+      if (currentDiagram?.title) {
+        defaultData.title = currentDiagram.title;
+      }
+      if (currentDiagram?.highlightText) {
+        defaultData.highlightText = currentDiagram.highlightText;
+      }
+
+      updatedPanels[panelIdx] = {
+        ...updatedPanels[panelIdx],
+        hasDiagram: true,
+        diagram: defaultData,
+      };
+    }
+
+    onUpdateComic({
+      ...comic,
+      panels: updatedPanels,
+    });
+  };
+
+  // 도식 제목 / 강조 문구 수정 핸들러
+  const handleUpdateDiagramField = (panelIdx: number, field: 'title' | 'highlightText', value: string) => {
+    const updatedPanels = [...comic.panels];
+    const diagram = updatedPanels[panelIdx].diagram || { type: 'none' };
+    updatedPanels[panelIdx] = {
+      ...updatedPanels[panelIdx],
+      diagram: {
+        ...diagram,
+        [field]: value,
+      },
+    };
+    onUpdateComic({
+      ...comic,
+      panels: updatedPanels,
+    });
+  };
+
   const handleProceed = () => {
     setIsGeneratingComic(true);
-    // 진행 시 캔버스로 매끄럽게 전환
     setTimeout(() => {
       setIsGeneratingComic(false);
       onProceedToCanvas();
@@ -70,10 +120,10 @@ export default function Step2StoryboardEditor({
             [2단계] 스토리보드 검토 및 수정
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-            생성된 9칸 기획안의 텍스트를 검토하고 수정하세요
+            생성된 9칸 기획안의 텍스트와 도식을 검토하고 수정하세요
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            원하는 텍스트를 자유롭게 다듬은 후 [3×3 교육용 만화 생성하기]를 누르면 실시간 만화가 조립됩니다.
+            각 컷의 텍스트를 다듬고, <strong>5번 표/도식 적용 내용</strong>에서 원하는 도식(표, 카드, 두루마리, 불릿 등)을 드롭다운으로 직접 선택할 수 있습니다.
           </p>
         </div>
 
@@ -207,6 +257,7 @@ export default function Step2StoryboardEditor({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {comic.panels.map((panel, idx) => {
           const isSelected = activePanelIdx === idx;
+          const currentDiagramType: DiagramType = panel.diagram?.type || (panel.hasDiagram ? 'scroll' : 'none');
 
           return (
             <div
@@ -228,8 +279,10 @@ export default function Step2StoryboardEditor({
                     패널 {panel.panelNumber} / 9
                   </span>
                 </div>
-                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">
-                  {panel.hasDiagram ? `도식: ${panel.diagram?.type || '있음'}` : '일러스트'}
+                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200">
+                  {panel.diagram?.type && panel.diagram.type !== 'none'
+                    ? `도식: ${panel.diagram.type}`
+                    : '도식 없음'}
                 </span>
               </div>
 
@@ -295,20 +348,88 @@ export default function Step2StoryboardEditor({
                   ))}
                 </div>
 
-                {/* 5. 표나 도식 (데이터 간략 정보) */}
+                {/* 5. 표나 도식 적용 내용 (사용자 요청: 드롭다운 선택 기능) */}
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1 flex items-center gap-1">
-                    <Table className="w-3 h-3 text-purple-500" />
-                    5. 표/도식 적용 내용
+                  <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1 flex items-center justify-between">
+                    <span className="flex items-center gap-1">
+                      <Table className="w-3.5 h-3.5 text-purple-600" />
+                      5. 표/도식 적용 내용 (도형 선택)
+                    </span>
+                    <span className="text-[10px] text-purple-600 font-bold">드롭다운 선택</span>
                   </label>
-                  <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-600 space-y-1">
-                    <div className="font-semibold text-slate-800">
-                      유형: {panel.diagram?.type || '기본'}
+
+                  <div className="space-y-2 p-3 rounded-xl bg-purple-50/40 border border-purple-200/80">
+                    {/* 도식 유형 드롭다운 셀렉트 박스 */}
+                    <div className="relative">
+                      <select
+                        value={currentDiagramType}
+                        onChange={(e) => handleChangeDiagramType(idx, e.target.value as DiagramType)}
+                        className="w-full appearance-none px-3 py-2 pr-8 bg-white border border-purple-300 rounded-lg text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-600 transition-all cursor-pointer shadow-2xs"
+                      >
+                        {DIAGRAM_TYPE_OPTIONS.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.icon} {opt.label}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-purple-600">
+                        <ChevronDown className="w-3.5 h-3.5" />
+                      </div>
                     </div>
-                    {panel.diagram?.highlightText && (
-                      <p className="text-[11px] text-slate-500 truncate">
-                        강조: {panel.diagram.highlightText}
-                      </p>
+
+                    {/* 선택된 도식에 따른 세부 정보 편집 필드 */}
+                    {currentDiagramType !== 'none' && (
+                      <div className="space-y-1.5 pt-1 border-t border-purple-100 text-xs">
+                        {/* 도식 제목 (있을 경우) */}
+                        {['scroll', 'bullet_list', 'network'].includes(currentDiagramType) && (
+                          <div>
+                            <label className="block text-[10px] font-bold text-slate-600 mb-0.5">
+                              도식 박스 제목
+                            </label>
+                            <input
+                              type="text"
+                              value={panel.diagram?.title || ''}
+                              onChange={(e) => handleUpdateDiagramField(idx, 'title', e.target.value)}
+                              placeholder="도식 상단 타이틀..."
+                              className="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-md text-xs text-slate-800 focus:outline-none focus:border-purple-500"
+                            />
+                          </div>
+                        )}
+
+                        {/* 강조 문구 또는 선언 내용 */}
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-600 mb-0.5">
+                            {currentDiagramType === 'quote_highlight'
+                              ? '인용 강조 문구'
+                              : currentDiagramType === 'scroll'
+                              ? '두루마리 본문 내용'
+                              : '하단 강조 요약 문구'}
+                          </label>
+                          <input
+                            type="text"
+                            value={
+                              currentDiagramType === 'quote_highlight'
+                                ? panel.diagram?.quoteText || panel.diagram?.highlightText || ''
+                                : panel.diagram?.highlightText || ''
+                            }
+                            onChange={(e) => {
+                              if (currentDiagramType === 'quote_highlight') {
+                                const updatedPanels = [...comic.panels];
+                                updatedPanels[idx].diagram = {
+                                  ...updatedPanels[idx].diagram!,
+                                  quoteText: e.target.value,
+                                  highlightText: e.target.value,
+                                };
+                                onUpdateComic({ ...comic, panels: updatedPanels });
+                              } else {
+                                handleUpdateDiagramField(idx, 'highlightText', e.target.value);
+                              }
+                            }}
+                            placeholder="강조할 문구나 본문 내용..."
+                            className="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-md text-xs text-slate-800 focus:outline-none focus:border-purple-500"
+                          />
+                        </div>
+                      </div>
                     )}
                   </div>
                 </div>

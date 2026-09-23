@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useState } from 'react';
-import { ComicProject, ComicPanel, DiagramType, DiagramData } from '@/types/comic';
+import { ComicProject, ComicPanel, DiagramType, DiagramData, getDefaultDiagramData } from '@/types/comic';
 import ComicCharacter, { getCharacterPoseForPanel, CharacterGender } from './ComicCharacter';
 import { 
   Sparkles, RefreshCw, Edit2, Download, 
@@ -973,67 +973,3 @@ function renderInteractiveDiagram(
   return null;
 }
 
-// ----------------------------------------------------------------------------------
-// 기본 도식 데이터 생성기
-// ----------------------------------------------------------------------------------
-function getDefaultDiagramData(type: DiagramType, title = ''): DiagramData {
-  switch (type) {
-    case 'table_compare':
-      return {
-        type: 'table_compare',
-        tableHeaders: ['관점 A (특징)', '관점 B (특징)'],
-        tableRows: [
-          { col1: '핵심 특징 1', col2: '대응되는 특징 1' },
-          { col1: '핵심 특징 2', col2: '대응되는 특징 2' },
-          { col1: '실천 방안 3', col2: '실천 방안 3' },
-        ],
-      };
-    case 'cards_compare':
-      return {
-        type: 'cards_compare',
-        items: [
-          { label: '핵심 A', description: '세부 설명 1\n장점 및 특징', color: 'border-blue-400 bg-blue-50' },
-          { label: '핵심 B', description: '세부 설명 2\n장점 및 특징', color: 'border-emerald-400 bg-emerald-50' },
-          { label: '핵심 C', description: '세부 설명 3\n장점 및 특징', color: 'border-amber-400 bg-amber-50' },
-        ],
-        highlightText: '서로 다른 특징, 그러나 조화로운 시너지!',
-      };
-    case 'bullet_list':
-      return {
-        type: 'bullet_list',
-        title: title || '필수 마스터 포인트',
-        items: [
-          { label: '첫 번째: 기본 개념 명확히 이해하기' },
-          { label: '두 번째: 올바른 적용 원칙 지키기' },
-          { label: '세 번째: 꾸준한 실천과 점검' },
-        ],
-      };
-    case 'scroll':
-      return {
-        type: 'scroll',
-        title: '중요 핵심 선언문',
-        highlightText: '독자가 깊이 새겨야 할 고문서 또는 권위 있는 선언문 내용입니다.',
-      };
-    case 'quote_highlight':
-      return {
-        type: 'quote_highlight',
-        quoteText: '“가장 본질적인 진리는 단순하며, 실천할 때 비로소 완성된다.”',
-        highlightText: '마음에 새기는 오늘의 핵심 한 줄!',
-      };
-    case 'network':
-      return {
-        type: 'network',
-        title: '핵심 키워드 연결망',
-        items: [
-          { label: '기본기', color: 'bg-blue-600 text-white' },
-          { label: '유연성', color: 'bg-emerald-600 text-white' },
-          { label: '실천력', color: 'bg-amber-600 text-white' },
-          { label: '지속성', color: 'bg-purple-600 text-white' },
-        ],
-        highlightText: '모든 요소가 유기적으로 연결되어 시너지를 창출합니다.',
-      };
-    case 'none':
-    default:
-      return { type: 'none' };
-  }
-}
