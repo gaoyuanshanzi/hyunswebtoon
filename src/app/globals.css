@@ -1,26 +1,116 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background: #f8fafc;
+  --foreground: #0f172a;
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Noto Sans KR", "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 교육 만화 말풍선 꼬리 효과 */
+.speech-bubble {
+  position: relative;
+  background: #ffffff;
+  border-radius: 1rem;
+  border: 2px solid #0f172a;
+  box-shadow: 2px 3px 0px rgba(15, 23, 42, 0.9);
+}
+
+.speech-bubble-tail-bottom::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 24px;
+  border-width: 10px 10px 0;
+  border-style: solid;
+  border-color: #ffffff transparent;
+  display: block;
+  width: 0;
+}
+.speech-bubble-tail-bottom::before {
+  content: '';
+  position: absolute;
+  bottom: -13px;
+  left: 23px;
+  border-width: 12px 11px 0;
+  border-style: solid;
+  border-color: #0f172a transparent;
+  display: block;
+  width: 0;
+}
+
+.speech-bubble-tail-left::after {
+  content: '';
+  position: absolute;
+  left: -10px;
+  top: 16px;
+  border-width: 8px 10px 8px 0;
+  border-style: solid;
+  border-color: transparent #ffffff transparent transparent;
+  display: block;
+  width: 0;
+}
+.speech-bubble-tail-left::before {
+  content: '';
+  position: absolute;
+  left: -13px;
+  top: 15px;
+  border-width: 9px 12px 9px 0;
+  border-style: solid;
+  border-color: transparent #0f172a transparent transparent;
+  display: block;
+  width: 0;
+}
+
+.speech-bubble-tail-right::after {
+  content: '';
+  position: absolute;
+  right: -10px;
+  top: 16px;
+  border-width: 8px 0 8px 10px;
+  border-style: solid;
+  border-color: transparent transparent transparent #ffffff;
+  display: block;
+  width: 0;
+}
+.speech-bubble-tail-right::before {
+  content: '';
+  position: absolute;
+  right: -13px;
+  top: 15px;
+  border-width: 9px 0 9px 12px;
+  border-style: solid;
+  border-color: transparent transparent transparent #0f172a;
+  display: block;
+  width: 0;
+}
+
+/* 고문서 두루마리 효과 */
+.parchment-scroll {
+  background: #fffbeb;
+  border: 2px solid #b45309;
+  border-radius: 8px;
+  box-shadow: inset 0 0 10px rgba(180, 83, 9, 0.1), 3px 3px 0px rgba(180, 83, 9, 0.8);
+}
+
+/* 인쇄용 스타일 */
+@media print {
+  body {
+    background: white;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .comic-export-container {
+    width: 100% !important;
+    max-width: none !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+  }
 }
