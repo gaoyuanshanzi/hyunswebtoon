@@ -3,6 +3,198 @@ import { toPng } from 'html-to-image';
 import confetti from 'canvas-confetti';
 
 /**
+ * 9가지 포즈별 인라인 SVG 문자열 생성기 (HTML 내보내기용)
+ */
+function getCharacterSvgString(pose: string, size = 64): string {
+  // 공통 SVG 정의
+  const defs = `
+    <defs>
+      <linearGradient id="skinGrad_${pose}" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#ffeedd"/>
+        <stop offset="100%" stop-color="#ffd8b8"/>
+      </linearGradient>
+      <linearGradient id="jacketGrad_${pose}" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#2563eb"/>
+        <stop offset="100%" stop-color="#1d4ed8"/>
+      </linearGradient>
+      <linearGradient id="hairGrad_${pose}" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#334155"/>
+        <stop offset="100%" stop-color="#0f172a"/>
+      </linearGradient>
+    </defs>
+  `;
+
+  const bodyBase = `
+    <path d="M 50 128 L 54 160 M 110 128 L 106 160" stroke="#0f172a" stroke-width="6" stroke-linecap="round"/>
+    <path d="M 50 128 L 54 160 M 110 128 L 106 160" stroke="#475569" stroke-width="4" stroke-linecap="round"/>
+    <path d="M 38 160 C 40 125, 60 120, 80 120 C 100 120, 120 125, 122 160 Z" fill="url(#jacketGrad_${pose})" stroke="#0f172a" stroke-width="3.5" stroke-linejoin="round"/>
+    <path d="M 68 122 C 72 135, 88 135, 92 122 Z" fill="#f8fafc" stroke="#0f172a" stroke-width="2.5"/>
+    <path d="M 64 122 C 68 130, 72 148, 80 160 M 96 122 C 92 130, 88 148, 80 160" stroke="#1e3a8a" stroke-width="2"/>
+  `;
+
+  const headBase = (tilt = 0) => `
+    <g transform="rotate(${tilt} 80 75)">
+      <rect x="72" y="105" width="16" height="20" fill="url(#skinGrad_${pose})" stroke="#0f172a" stroke-width="3"/>
+      <ellipse cx="44" cy="80" rx="6" ry="8" fill="url(#skinGrad_${pose})" stroke="#0f172a" stroke-width="2.5"/>
+      <ellipse cx="116" cy="80" rx="6" ry="8" fill="url(#skinGrad_${pose})" stroke="#0f172a" stroke-width="2.5"/>
+      <path d="M 46 68 C 44 95, 60 114, 80 114 C 100 114, 116 95, 114 68 C 114 45, 46 45, 46 68 Z" fill="url(#skinGrad_${pose})" stroke="#0f172a" stroke-width="3.5"/>
+      <circle cx="56" cy="88" r="7" fill="#f43f5e" opacity="0.3"/>
+      <circle cx="104" cy="88" r="7" fill="#f43f5e" opacity="0.3"/>
+    </g>
+  `;
+
+  const hair = (tilt = 0) => `
+    <g transform="rotate(${tilt} 80 75)">
+      <path d="M 40 70 C 35 45, 55 25, 80 25 C 105 25, 125 45, 120 70 C 118 78, 122 84, 120 88 C 116 80, 116 65, 114 60 C 110 40, 95 32, 80 32 C 65 32, 50 40, 46 60 C 44 65, 44 80, 40 88 C 38 84, 42 78, 40 70 Z" fill="url(#hairGrad_${pose})" stroke="#0f172a" stroke-width="3"/>
+      <path d="M 43 55 C 50 62, 58 60, 62 65 C 65 58, 72 55, 78 66 C 82 56, 90 58, 96 66 C 100 58, 108 62, 116 56 C 112 40, 98 32, 80 32 C 60 32, 48 42, 43 55 Z" fill="url(#hairGrad_${pose})" stroke="#0f172a" stroke-width="2.5"/>
+      <path d="M 78 26 C 75 18, 85 16, 82 25" stroke="#0f172a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    </g>
+  `;
+
+  let poseContent = '';
+
+  if (pose === 'curious' || pose === 'headerLeft') {
+    poseContent = `
+      ${bodyBase}
+      <path d="M 108 145 C 118 130, 110 108, 98 96" stroke="#0f172a" stroke-width="10" stroke-linecap="round"/>
+      <path d="M 108 145 C 118 130, 110 108, 98 96" stroke="url(#jacketGrad_${pose})" stroke-width="7" stroke-linecap="round"/>
+      <circle cx="96" cy="94" r="7" fill="url(#skinGrad_${pose})" stroke="#0f172a" stroke-width="2.5"/>
+      ${headBase(-8)}
+      <g transform="rotate(-8 80 75)">
+        <path d="M 54 68 Q 63 64 70 70" stroke="#0f172a" stroke-width="3" stroke-linecap="round" fill="none"/>
+        <path d="M 90 70 Q 98 63 106 66" stroke="#0f172a" stroke-width="3" stroke-linecap="round" fill="none"/>
+        <ellipse cx="62" cy="78" rx="4.5" ry="6" fill="#0f172a"/><circle cx="63.5" cy="76" r="2" fill="#ffffff"/>
+        <ellipse cx="98" cy="78" rx="4.5" ry="6" fill="#0f172a"/><circle cx="99.5" cy="76" r="2" fill="#ffffff"/>
+        <ellipse cx="80" cy="96" rx="4" ry="5" fill="#e11d48" stroke="#0f172a" stroke-width="2"/>
+      </g>
+      ${hair(-8)}
+      <text x="115" y="45" font-size="22" font-weight="900" fill="#3b82f6" font-family="sans-serif">?</text>
+    `;
+  } else if (pose === 'listening') {
+    poseContent = `
+      ${bodyBase}
+      <path d="M 52 145 C 60 135, 70 135, 78 136 M 108 145 C 100 135, 90 135, 82 136" stroke="url(#jacketGrad_${pose})" stroke-width="7" stroke-linecap="round"/>
+      <ellipse cx="80" cy="136" rx="8" ry="6" fill="url(#skinGrad_${pose})" stroke="#0f172a" stroke-width="2.5"/>
+      ${headBase(4)}
+      <g transform="rotate(4 80 75)">
+        <path d="M 54 68 Q 63 63 70 67" stroke="#0f172a" stroke-width="3" stroke-linecap="round" fill="none"/>
+        <path d="M 90 67 Q 97 63 106 68" stroke="#0f172a" stroke-width="3" stroke-linecap="round" fill="none"/>
+        <ellipse cx="62" cy="78" rx="5" ry="6.5" fill="#0f172a"/><circle cx="63.5" cy="75.5" r="2.5" fill="#ffffff"/>
+        <ellipse cx="98" cy="78" rx="5" ry="6.5" fill="#0f172a"/><circle cx="99.5" cy="75.5" r="2.5" fill="#ffffff"/>
+        <path d="M 74 95 Q 80 100 86 95" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+      </g>
+      ${hair(4)}
+    `;
+  } else if (pose === 'thinking') {
+    poseContent = `
+      ${bodyBase}
+      <path d="M 112 145 C 118 125, 112 100, 104 88" stroke="url(#jacketGrad_${pose})" stroke-width="7" stroke-linecap="round"/>
+      <circle cx="104" cy="86" r="6" fill="url(#skinGrad_${pose})" stroke="#0f172a" stroke-width="2.5"/>
+      ${headBase(0)}
+      <g>
+        <path d="M 54 69 L 70 70 M 90 70 L 106 69" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/>
+        <ellipse cx="65" cy="78" rx="4.5" ry="5.5" fill="#0f172a"/><circle cx="66" cy="76" r="1.8" fill="#ffffff"/>
+        <ellipse cx="101" cy="78" rx="4.5" ry="5.5" fill="#0f172a"/><circle cx="102" cy="76" r="1.8" fill="#ffffff"/>
+        <path d="M 76 96 L 84 96" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/>
+      </g>
+      ${hair(0)}
+    `;
+  } else if (pose === 'comparing') {
+    poseContent = `
+      ${bodyBase}
+      <path d="M 44 148 C 35 130, 32 118, 30 110" stroke="url(#jacketGrad_${pose})" stroke-width="6" stroke-linecap="round"/>
+      <ellipse cx="28" cy="108" rx="6" ry="5" fill="url(#skinGrad_${pose})" stroke="#0f172a" stroke-width="2.5"/>
+      <path d="M 116 148 C 125 130, 128 118, 130 110" stroke="url(#jacketGrad_${pose})" stroke-width="6" stroke-linecap="round"/>
+      <ellipse cx="132" cy="108" rx="6" ry="5" fill="url(#skinGrad_${pose})" stroke="#0f172a" stroke-width="2.5"/>
+      ${headBase(0)}
+      <g>
+        <ellipse cx="62" cy="78" rx="4.5" ry="5.5" fill="#0f172a"/><circle cx="63.5" cy="76" r="1.8" fill="#ffffff"/>
+        <ellipse cx="98" cy="78" rx="4.5" ry="5.5" fill="#0f172a"/><circle cx="99.5" cy="76" r="1.8" fill="#ffffff"/>
+        <path d="M 75 96 Q 80 99 85 96" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+      </g>
+      ${hair(0)}
+    `;
+  } else if (pose === 'impressed') {
+    poseContent = `
+      ${bodyBase}
+      <path d="M 112 145 C 105 130, 95 125, 84 126" stroke="url(#jacketGrad_${pose})" stroke-width="7" stroke-linecap="round"/>
+      <ellipse cx="82" cy="126" rx="7" ry="6" fill="url(#skinGrad_${pose})" stroke="#0f172a" stroke-width="2.5"/>
+      ${headBase(3)}
+      <g transform="rotate(3 80 75)">
+        <path d="M 57 78 Q 63 72 69 78 M 93 78 Q 99 72 105 78" stroke="#0f172a" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+        <path d="M 74 95 Q 80 102 86 95" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round" fill="#e11d48"/>
+      </g>
+      ${hair(3)}
+    `;
+  } else if (pose === 'explaining' || pose === 'headerRight') {
+    poseContent = `
+      ${bodyBase}
+      <path d="M 112 145 C 122 135, 130 130, 142 125" stroke="url(#jacketGrad_${pose})" stroke-width="7" stroke-linecap="round"/>
+      <ellipse cx="144" cy="123" rx="7" ry="5" fill="url(#skinGrad_${pose})" stroke="#0f172a" stroke-width="2.5"/>
+      ${headBase(-3)}
+      <g transform="rotate(-3 80 75)">
+        <ellipse cx="62" cy="77" rx="4.5" ry="6" fill="#0f172a"/><circle cx="63.5" cy="75" r="2" fill="#ffffff"/>
+        <ellipse cx="98" cy="77" rx="4.5" ry="6" fill="#0f172a"/><circle cx="99.5" cy="75" r="2" fill="#ffffff"/>
+        <path d="M 75 94 Q 80 102 85 94 Z" fill="#e11d48" stroke="#0f172a" stroke-width="2"/>
+      </g>
+      ${hair(-3)}
+    `;
+  } else if (pose === 'realized') {
+    poseContent = `
+      ${bodyBase}
+      <path d="M 112 145 C 124 130, 126 100, 126 78 L 126 62" stroke="url(#jacketGrad_${pose})" stroke-width="7" stroke-linecap="round"/>
+      <circle cx="126" cy="62" r="5" fill="url(#skinGrad_${pose})" stroke="#0f172a" stroke-width="2"/>
+      ${headBase(5)}
+      <g transform="rotate(5 80 75)">
+        <ellipse cx="62" cy="76" rx="5.5" ry="6.5" fill="#0f172a"/><circle cx="64" cy="74" r="2.5" fill="#ffffff"/>
+        <ellipse cx="98" cy="76" rx="5.5" ry="6.5" fill="#0f172a"/><circle cx="100" cy="74" r="2.5" fill="#ffffff"/>
+        <ellipse cx="80" cy="95" rx="5" ry="6" fill="#e11d48" stroke="#0f172a" stroke-width="2"/>
+      </g>
+      ${hair(5)}
+      <circle cx="130" cy="42" r="6" fill="#fde047" stroke="#f59e0b" stroke-width="2"/>
+    `;
+  } else if (pose === 'smiling') {
+    poseContent = `
+      ${bodyBase}
+      <path d="M 50 145 C 60 138, 70 138, 76 138" stroke="url(#jacketGrad_${pose})" stroke-width="6" stroke-linecap="round"/>
+      <ellipse cx="78" cy="138" rx="6" ry="5" fill="url(#skinGrad_${pose})" stroke="#0f172a" stroke-width="2"/>
+      ${headBase(2)}
+      <g transform="rotate(2 80 75)">
+        <path d="M 56 77 Q 62 70 68 77 M 92 77 Q 98 70 104 77" stroke="#0f172a" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+        <path d="M 72 93 Q 80 104 88 93 Z" fill="#e11d48" stroke="#0f172a" stroke-width="2"/>
+        <path d="M 74 93 Q 80 97 86 93" fill="#ffffff"/>
+      </g>
+      ${hair(2)}
+    `;
+  } else {
+    // cheering (9컷)
+    poseContent = `
+      ${bodyBase}
+      <path d="M 112 145 C 126 128, 130 95, 128 72" stroke="url(#jacketGrad_${pose})" stroke-width="7" stroke-linecap="round"/>
+      <circle cx="128" cy="68" r="8" fill="url(#skinGrad_${pose})" stroke="#0f172a" stroke-width="2.5"/>
+      ${headBase(-2)}
+      <g transform="rotate(-2 80 75)">
+        <ellipse cx="62" cy="76" rx="5" ry="6" fill="#0f172a"/><circle cx="64" cy="74" r="2.2" fill="#ffffff"/>
+        <ellipse cx="98" cy="76" rx="5" ry="6" fill="#0f172a"/><circle cx="100" cy="74" r="2.2" fill="#ffffff"/>
+        <path d="M 73 93 Q 80 105 87 93 Z" fill="#e11d48" stroke="#0f172a" stroke-width="2"/>
+        <path d="M 75 93 Q 80 97 85 93" fill="#ffffff"/>
+      </g>
+      ${hair(-2)}
+      <text x="135" y="45" font-size="20" fill="#f59e0b">✨</text>
+    `;
+  }
+
+  return `
+    <svg viewBox="0 0 160 160" width="${size}" height="${size}" style="width:${size}px; height:${size}px; overflow:visible;">
+      ${defs}
+      ${poseContent}
+    </svg>
+  `;
+}
+
+const poseList = ['curious', 'listening', 'thinking', 'comparing', 'impressed', 'explaining', 'realized', 'smiling', 'cheering'];
+
+/**
  * 만화 프로젝트를 완벽한 단독 실행형(standalone) HTML 파일로 생성하고 로컬 다운로드합니다.
  */
 export function exportComicToHtml(comic: ComicProject) {
@@ -12,6 +204,8 @@ export function exportComicToHtml(comic: ComicProject) {
   const panelsHtml = comic.panels
     .map((panel, idx) => {
       const badge = numberBadges[idx] || `[${idx + 1}]`;
+      const pose = poseList[idx] || 'cheering';
+      const charSvg = getCharacterSvgString(pose, 72);
 
       // 도식 렌더러
       let diagramHtml = '';
@@ -92,7 +286,7 @@ export function exportComicToHtml(comic: ComicProject) {
       }
 
       // 말풍선들
-      const bubblesHtml = (panel.speechBubbles || [])
+      const bubblesHtml = (panel.speechBubbles || [{ id: '1', text: '핵심을 기억해요!' }])
         .map(
           (b) => `
           <div class="speech-bubble">
@@ -111,7 +305,16 @@ export function exportComicToHtml(comic: ComicProject) {
           <div class="panel-body">
             <p class="key-message">${panel.keyMessage}</p>
             ${diagramHtml}
-            ${bubblesHtml}
+            
+            <!-- 캐릭터 아바타 + 말풍선 결합 영역 -->
+            <div class="character-speech-row">
+              <div class="char-avatar-box">
+                ${charSvg}
+              </div>
+              <div class="bubble-column">
+                ${bubblesHtml}
+              </div>
+            </div>
           </div>
           <div class="panel-footer">
             "${panel.mustRemember}"
@@ -120,6 +323,9 @@ export function exportComicToHtml(comic: ComicProject) {
       `;
     })
     .join('');
+
+  const headerLeftSvg = getCharacterSvgString('curious', 68);
+  const headerRightSvg = getCharacterSvgString('explaining', 68);
 
   const fullHtml = `<!DOCTYPE html>
 <html lang="ko">
@@ -143,14 +349,14 @@ export function exportComicToHtml(comic: ComicProject) {
     .comic-canvas {
       background: #ffffff;
       width: 100%;
-      max-width: 1160px;
+      max-width: 1200px;
       border: 3px solid #0f172a;
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
       padding: 24px;
     }
     .header-banner {
       display: grid;
-      grid-template-columns: 2.5fr 7fr 2.5fr;
+      grid-template-columns: 2.8fr 6.4fr 2.8fr;
       gap: 15px;
       align-items: center;
       border-bottom: 2px solid #0f172a;
@@ -162,19 +368,18 @@ export function exportComicToHtml(comic: ComicProject) {
       align-items: center;
       gap: 10px;
     }
-    .avatar {
-      width: 50px;
-      height: 50px;
+    .header-avatar {
+      width: 64px;
+      height: 64px;
       border: 2px solid #0f172a;
-      border-radius: 12px;
+      border-radius: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 24px;
-      background: #fef3c7;
+      background: #eff6ff;
       flex-shrink: 0;
+      overflow: hidden;
     }
-    .avatar.right { background: #dbeafe; }
     .header-speech {
       background: #ffffff;
       border: 2px solid #0f172a;
@@ -188,7 +393,7 @@ export function exportComicToHtml(comic: ComicProject) {
     .main-title-block { text-align: center; }
     .main-title {
       font-family: 'Do Hyeon', 'Noto Sans KR', sans-serif;
-      font-size: 38px;
+      font-size: 40px;
       font-weight: 900;
       color: #020617;
       line-height: 1.1;
@@ -253,11 +458,39 @@ export function exportComicToHtml(comic: ComicProject) {
       line-height: 1.45;
       color: #1e293b;
     }
+    /* 캐릭터와 말풍선 행 */
+    .character-speech-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      margin-top: auto;
+      padding-top: 8px;
+      border-top: 1px solid #e2e8f0;
+    }
+    .char-avatar-box {
+      width: 68px;
+      height: 68px;
+      border-radius: 12px;
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .bubble-column {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 0;
+    }
     .speech-bubble {
       background: #fffbeb;
       border: 1.5px solid #0f172a;
       border-radius: 10px;
-      padding: 8px 10px;
+      padding: 7px 10px;
       font-size: 11px;
       font-weight: 700;
       color: #1e293b;
@@ -278,21 +511,20 @@ export function exportComicToHtml(comic: ComicProject) {
       background: #fffbeb;
       border: 1.5px solid #b45309;
       border-radius: 8px;
-      padding: 10px;
-      box-shadow: inset 0 0 8px rgba(180, 83, 9, 0.1);
+      padding: 8px;
     }
     .scroll-title {
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 900;
       color: #78350f;
       text-align: center;
       border-bottom: 1px solid #fde68a;
-      padding-bottom: 4px;
-      margin-bottom: 6px;
+      padding-bottom: 3px;
+      margin-bottom: 4px;
     }
     .scroll-text {
-      font-size: 11px;
-      line-height: 1.45;
+      font-size: 10px;
+      line-height: 1.4;
       color: #451a03;
       text-align: justify;
     }
@@ -300,20 +532,20 @@ export function exportComicToHtml(comic: ComicProject) {
       background: #f8fafc;
       border: 1px solid #cbd5e1;
       border-radius: 8px;
-      padding: 8px;
+      padding: 6px;
       text-align: center;
     }
-    .network-title { font-size: 11px; font-weight: 900; margin-bottom: 6px; }
-    .badges-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; margin-bottom: 6px; }
+    .network-title { font-size: 10px; font-weight: 900; margin-bottom: 4px; }
+    .badges-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; margin-bottom: 4px; }
     .badge {
-      font-size: 10px;
+      font-size: 9px;
       font-weight: 800;
       padding: 2px 6px;
       border-radius: 12px;
       background: #3b82f6;
       color: white;
     }
-    .network-sub { font-size: 10px; font-weight: 700; color: #475569; }
+    .network-sub { font-size: 9px; font-weight: 700; color: #475569; }
     .compare-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
     .mini-card {
       background: #f8fafc;
@@ -321,14 +553,14 @@ export function exportComicToHtml(comic: ComicProject) {
       border-radius: 6px;
       padding: 4px;
       text-align: center;
-      font-size: 10px;
+      font-size: 9px;
     }
-    .mini-desc { font-size: 9px; color: #475569; margin-top: 2px; }
+    .mini-desc { font-size: 8px; color: #475569; margin-top: 2px; }
     .compare-banner {
       background: #fef3c7;
       border-radius: 6px;
       padding: 4px;
-      font-size: 10px;
+      font-size: 9px;
       font-weight: 900;
       color: #78350f;
       text-align: center;
@@ -338,38 +570,38 @@ export function exportComicToHtml(comic: ComicProject) {
       background: #f8fafc;
       border: 1px solid #cbd5e1;
       border-radius: 8px;
-      padding: 8px;
-      font-size: 11px;
+      padding: 6px;
+      font-size: 10px;
     }
-    .bullet-title { font-weight: 900; color: #1e3a8a; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; margin-bottom: 6px; }
+    .bullet-title { font-weight: 900; color: #1e3a8a; border-bottom: 1px solid #e2e8f0; padding-bottom: 3px; margin-bottom: 4px; }
     .bullet-box ul { list-style: none; }
-    .bullet-box li { font-size: 10px; margin-bottom: 3px; color: #334155; }
+    .bullet-box li { font-size: 9px; margin-bottom: 2px; color: #334155; }
     .table-compare {
       width: 100%;
       border-collapse: collapse;
-      font-size: 10px;
+      font-size: 9px;
       border-radius: 6px;
       overflow: hidden;
       border: 1px solid #cbd5e1;
     }
-    .table-compare th { padding: 5px; color: white; }
+    .table-compare th { padding: 4px; color: white; }
     .th-left { background: #2563eb; }
     .th-right { background: #0d9488; }
     .table-compare td {
       border: 1px solid #e2e8f0;
-      padding: 4px 6px;
-      font-size: 10px;
+      padding: 3px 5px;
+      font-size: 9px;
       background: #ffffff;
     }
     .quote-box {
       background: #fff7ed;
       border: 1px solid #fed7aa;
       border-radius: 8px;
-      padding: 8px;
+      padding: 6px;
       text-align: center;
     }
-    .quote-main { font-size: 11px; font-weight: 900; color: #7c2d12; line-height: 1.35; }
-    .quote-sub { font-size: 10px; font-weight: 700; color: #9a3412; margin-top: 4px; }
+    .quote-main { font-size: 10px; font-weight: 900; color: #7c2d12; line-height: 1.35; }
+    .quote-sub { font-size: 9px; font-weight: 700; color: #9a3412; margin-top: 3px; }
     .footer-note {
       margin-top: 20px;
       padding-top: 10px;
@@ -389,7 +621,7 @@ export function exportComicToHtml(comic: ComicProject) {
   <div class="comic-canvas">
     <div class="header-banner">
       <div class="header-char">
-        <div class="avatar">🙋‍♂️</div>
+        <div class="header-avatar">${headerLeftSvg}</div>
         <div class="header-speech">${comic.headerDialogue.leftCharacter.dialogue}</div>
       </div>
       <div class="main-title-block">
@@ -399,7 +631,7 @@ export function exportComicToHtml(comic: ComicProject) {
       </div>
       <div class="header-char" style="justify-content: flex-end;">
         <div class="header-speech" style="background: #eff6ff; color: #1e3a8a;">${comic.headerDialogue.rightCharacter.dialogue}</div>
-        <div class="avatar right">⛪</div>
+        <div class="header-avatar" style="background: #e0e7ff;">${headerRightSvg}</div>
       </div>
     </div>
 
@@ -447,7 +679,7 @@ export async function exportComicToPng(comic: ComicProject) {
   try {
     const dataUrl = await toPng(element, {
       quality: 0.95,
-      pixelRatio: 2, // 고해상도 출력
+      pixelRatio: 2,
     });
 
     const link = document.createElement('a');

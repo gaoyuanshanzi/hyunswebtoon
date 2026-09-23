@@ -2,10 +2,11 @@
 
 import React, { useRef, useState } from 'react';
 import { ComicProject, ComicPanel } from '@/types/comic';
+import ComicCharacter, { getCharacterPoseForPanel, CharacterPose } from './ComicCharacter';
 import { 
   Sparkles, RefreshCw, Edit2, Check, Download, 
-  Share2, ZoomIn, ZoomOut, Maximize2, ShieldCheck, 
-  HelpCircle, BookOpen, Quote
+  Share2, ZoomIn, ZoomOut, ShieldCheck, 
+  BookOpen, Quote, Smile
 } from 'lucide-react';
 
 interface ComicCanvasProps {
@@ -73,6 +74,9 @@ export default function ComicCanvas({
             <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
             [3단계] 최종 9컷 만화 캔버스
           </div>
+          <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full flex items-center gap-1">
+            <Smile className="w-3.5 h-3.5" /> 9개 컷 캐릭터 표정·제스처 완벽 반영
+          </span>
           <p className="text-xs text-slate-500 hidden sm:block">
             * 텍스트를 직접 클릭하여 바로 수정할 수 있습니다.
           </p>
@@ -144,23 +148,23 @@ export default function ComicCanvas({
             transform: `scale(${zoomLevel / 100})`,
             transformOrigin: 'top center',
             transition: 'transform 0.15s ease-out',
-            width: '1180px',
+            width: '1200px',
           }}
-          className="bg-white border-2 border-slate-900 shadow-2xl p-6 sm:p-8 rounded-none text-slate-900 font-sans comic-export-container select-text"
+          className="bg-white border-3 border-slate-900 shadow-2xl p-6 sm:p-8 rounded-none text-slate-900 font-sans comic-export-container select-text"
         >
           {/* =========================================================================
               [상단 메인 타이틀 배너]
-              - 좌측 인물 캐릭터 & 말풍선
-              - 중앙 볼드 제목 & 부제 & 출처
-              - 우측 보조 캐릭터 & 말풍선
+              - 좌측: 배낭 멘 파란 후드 소년 캐릭터 & 질문 말풍선
+              - 중앙: 큰 볼드 타이틀 & 부제 & 출처
+              - 우측: 미소 띤 안내 소년 캐릭터 & 답변 말풍선
              ========================================================================= */}
-          <div className="border-b-2 border-slate-900 pb-5 mb-5 grid grid-cols-12 gap-4 items-center">
+          <div className="border-b-3 border-slate-900 pb-5 mb-5 grid grid-cols-12 gap-3 items-center">
             {/* 좌측 캐릭터 & 질문 */}
             <div className="col-span-3 flex items-center gap-2">
-              <div className="w-14 h-14 rounded-2xl bg-amber-100 border-2 border-slate-900 overflow-hidden shrink-0 flex items-center justify-center relative shadow-xs">
-                <span className="text-2xl">🙋‍♂️</span>
+              <div className="w-18 h-18 rounded-2xl bg-gradient-to-b from-blue-50 to-slate-100 border-2 border-slate-900 overflow-hidden shrink-0 flex items-center justify-center relative shadow-xs p-1">
+                <ComicCharacter pose="curious" size={70} />
               </div>
-              <div className="speech-bubble speech-bubble-tail-left p-2.5 text-xs font-bold leading-snug text-slate-800 max-w-[210px]">
+              <div className="speech-bubble speech-bubble-tail-left p-2.5 text-xs font-bold leading-snug text-slate-800 max-w-[200px]">
                 <p
                   contentEditable={isEditable}
                   suppressContentEditableWarning
@@ -183,7 +187,7 @@ export default function ComicCanvas({
                 contentEditable={isEditable}
                 suppressContentEditableWarning
                 onBlur={(e) => handleTextChange('title', e.currentTarget.innerText)}
-                className="text-4xl font-black text-slate-950 tracking-tight leading-tight outline-none focus:bg-blue-50/50 rounded inline-block"
+                className="text-4xl sm:text-5xl font-black text-slate-950 tracking-tight leading-tight outline-none focus:bg-blue-50/50 rounded inline-block"
                 style={{ fontFamily: "'Do Hyeon', 'Noto Sans KR', sans-serif" }}
               >
                 {comic.title}
@@ -193,7 +197,7 @@ export default function ComicCanvas({
                 contentEditable={isEditable}
                 suppressContentEditableWarning
                 onBlur={(e) => handleTextChange('subtitle', e.currentTarget.innerText)}
-                className="text-sm font-bold text-slate-600 mt-1 outline-none focus:bg-blue-50/50 rounded inline-block"
+                className="text-sm sm:text-base font-bold text-slate-600 mt-1 outline-none focus:bg-blue-50/50 rounded inline-block"
               >
                 {comic.subtitle}
               </div>
@@ -213,7 +217,7 @@ export default function ComicCanvas({
 
             {/* 우측 캐릭터 & 답변 */}
             <div className="col-span-3 flex items-center justify-end gap-2">
-              <div className="speech-bubble speech-bubble-tail-right p-2.5 text-xs font-bold leading-snug text-blue-900 bg-blue-50 border-blue-900 max-w-[200px] text-right">
+              <div className="speech-bubble speech-bubble-tail-right p-2.5 text-xs font-bold leading-snug text-blue-900 bg-blue-50/90 border-blue-900 max-w-[200px] text-right">
                 <p
                   contentEditable={isEditable}
                   suppressContentEditableWarning
@@ -228,8 +232,8 @@ export default function ComicCanvas({
                   {comic.headerDialogue.rightCharacter.dialogue}
                 </p>
               </div>
-              <div className="w-14 h-14 rounded-2xl bg-blue-100 border-2 border-slate-900 overflow-hidden shrink-0 flex items-center justify-center relative shadow-xs">
-                <span className="text-2xl">⛪</span>
+              <div className="w-18 h-18 rounded-2xl bg-gradient-to-b from-blue-50 to-indigo-100 border-2 border-slate-900 overflow-hidden shrink-0 flex items-center justify-center relative shadow-xs p-1">
+                <ComicCharacter pose="explaining" size={70} />
               </div>
             </div>
           </div>
@@ -285,6 +289,9 @@ function PanelCard({
   const numberBadges = ['❶', '❷', '❸', '❹', '❺', '❻', '❼', '❽', '❾'];
   const badge = numberBadges[panel.panelNumber - 1] || `[${panel.panelNumber}]`;
 
+  // 1~9컷별 맞춤 캐릭터 포즈 가져오기
+  const characterPose = getCharacterPoseForPanel(panel.panelNumber);
+
   return (
     <div className="border-2 border-slate-900 rounded-xl overflow-hidden bg-white flex flex-col justify-between shadow-xs relative">
       {/* 1. 패널 상단 번호 뱃지 & 패널 제목 */}
@@ -303,7 +310,7 @@ function PanelCard({
       </div>
 
       {/* 2. 패널 본문 영역 */}
-      <div className="p-3 flex-1 flex flex-col justify-between space-y-2.5 bg-gradient-to-b from-white to-slate-50/40">
+      <div className="p-3 flex-1 flex flex-col justify-between space-y-2.5 bg-gradient-to-b from-white via-white to-slate-50/50">
         {/* 핵심 메시지 1~2줄 */}
         <p
           contentEditable={isEditable}
@@ -316,18 +323,29 @@ function PanelCard({
           {panel.keyMessage}
         </p>
 
-        {/* 3. 패널 특화 인포그래픽 도식 / 비주얼 요소 */}
+        {/* 3. 패널 특화 인포그래픽 도식 요소 */}
         <div className="my-1">
           {renderDiagramContent(panel, panelIdx, isEditable, onTextChange)}
         </div>
 
-        {/* 4. 말풍선 컴포넌트 */}
-        {panel.speechBubbles && panel.speechBubbles.length > 0 && (
-          <div className="space-y-1.5 pt-1">
-            {panel.speechBubbles.map((bubble, bIdx) => (
+        {/* 4. [만화 캐릭터 + 말풍선 결합 영역] - 실제 만화 컷처럼 인물이 등장! */}
+        <div className="pt-1 border-t border-slate-100 flex items-end gap-2.5">
+          {/* 패널별 고유 표정과 제스처를 가진 주인공 소년 캐릭터 */}
+          <div className="relative group shrink-0">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-slate-50 border border-slate-300 overflow-hidden flex items-center justify-center p-0.5 shadow-2xs">
+              <ComicCharacter pose={characterPose} size={78} />
+            </div>
+          </div>
+
+          {/* 말풍선 목록 */}
+          <div className="flex-1 space-y-1.5 min-w-0">
+            {(panel.speechBubbles && panel.speechBubbles.length > 0
+              ? panel.speechBubbles
+              : [{ id: `sb-${panelIdx}`, text: '핵심을 기억해요!' }]
+            ).map((bubble, bIdx) => (
               <div
                 key={bubble.id || bIdx}
-                className="speech-bubble speech-bubble-tail-bottom p-2 bg-amber-50/80 border-slate-800 text-[11px] font-bold text-slate-900 leading-snug"
+                className="speech-bubble speech-bubble-tail-bottom p-2 bg-amber-50/90 border-slate-900 text-[11px] font-bold text-slate-900 leading-snug"
               >
                 <div
                   contentEditable={isEditable}
@@ -345,15 +363,15 @@ function PanelCard({
               </div>
             ))}
           </div>
-        )}
+        </div>
 
-        {/* 5. 일러스트 이미지 (URL이 있거나 생성 가능한 경우) */}
+        {/* 5. 보조 일러스트 이미지 (URL이 있는 경우) */}
         {panel.imageUrl && (
-          <div className="relative rounded-lg overflow-hidden border border-slate-300 mt-1 max-h-36">
+          <div className="relative rounded-lg overflow-hidden border border-slate-300 mt-1 max-h-28">
             <img
               src={panel.imageUrl}
               alt={panel.title}
-              className="w-full h-32 object-cover"
+              className="w-full h-24 object-cover"
             />
             {isEditable && (
               <button
@@ -402,19 +420,19 @@ function renderDiagramContent(
   const diagram = panel.diagram;
   if (!diagram || diagram.type === 'none') {
     return (
-      <div className="p-2.5 rounded-lg bg-slate-100/80 border border-slate-200 text-[11px] text-slate-600 italic text-center">
+      <div className="p-2 rounded-lg bg-slate-100/80 border border-slate-200 text-[11px] text-slate-600 italic text-center">
         {panel.sceneDescription}
       </div>
     );
   }
 
-  // 1. 고문서 두루마리 (패널 1: 사도신경 등)
+  // 1. 고문서 두루마리 (사도신경 등)
   if (diagram.type === 'scroll') {
     return (
-      <div className="parchment-scroll p-3 text-slate-900 relative">
-        <div className="text-[11px] font-black text-amber-900 text-center uppercase tracking-widest border-b border-amber-300 pb-1 mb-1.5 flex items-center justify-center gap-1">
+      <div className="parchment-scroll p-2.5 text-slate-900 relative">
+        <div className="text-[10px] font-black text-amber-900 text-center uppercase tracking-widest border-b border-amber-300 pb-1 mb-1 flex items-center justify-center gap-1">
           <BookOpen className="w-3.5 h-3.5 text-amber-800" />
-          <span>{diagram.title || '사도신경'}</span>
+          <span>{diagram.title || '출발점 질문'}</span>
         </div>
         <p
           contentEditable={isEditable}
@@ -428,26 +446,24 @@ function renderDiagramContent(
           className="text-[11px] font-serif leading-relaxed text-amber-950 text-justify outline-none focus:bg-amber-100/50 rounded"
         >
           {diagram.highlightText ||
-            '나는 전능하신 아버지 하나님을 믿으며, 그의 외아들 예수 그리스도를 믿습니다.'}
+            '우리가 흔히 오해하기 쉬운 본질은 무엇일까요?'}
         </p>
       </div>
     );
   }
 
-  // 2. 네트워크 / 원형 지체 다이어그램 (패널 2 등)
+  // 2. 네트워크 / 원형 지체 다이어그램
   if (diagram.type === 'network') {
     return (
-      <div className="p-3 bg-gradient-to-r from-blue-50/60 via-purple-50/60 to-emerald-50/60 rounded-xl border border-slate-200">
-        <div className="text-center font-black text-xs text-slate-800 mb-2">
-          {diagram.title || '한 몸, 많은 지체'}
+      <div className="p-2.5 bg-gradient-to-r from-blue-50/70 via-purple-50/70 to-emerald-50/70 rounded-xl border border-slate-200">
+        <div className="text-center font-black text-[11px] text-slate-800 mb-1.5">
+          {diagram.title || '핵심 원인 3요소'}
         </div>
-        <div className="flex flex-wrap justify-center gap-1.5 mb-2">
+        <div className="flex flex-wrap justify-center gap-1.5 mb-1.5">
           {(diagram.items || [
-            { label: '장로교', color: 'bg-blue-600 text-white' },
-            { label: '감리교', color: 'bg-emerald-600 text-white' },
-            { label: '침례교', color: 'bg-amber-600 text-white' },
-            { label: '루터교', color: 'bg-rose-600 text-white' },
-            { label: '성공회', color: 'bg-purple-600 text-white' },
+            { label: '요소 1', color: 'bg-blue-600 text-white' },
+            { label: '요소 2', color: 'bg-emerald-600 text-white' },
+            { label: '요소 3', color: 'bg-amber-600 text-white' },
           ]).map((item, i) => (
             <span
               key={i}
@@ -476,16 +492,16 @@ function renderDiagramContent(
     );
   }
 
-  // 3. 다중 비교 카드 (패널 3 종교개혁자 3인, 패널 4 교파별 강조점 등)
+  // 3. 다중 비교 카드
   if (diagram.type === 'cards_compare') {
     const items = diagram.items || [];
     return (
-      <div className="space-y-1.5">
-        <div className="grid grid-cols-3 sm:grid-cols-5 gap-1 text-center">
+      <div className="space-y-1">
+        <div className="grid grid-cols-3 gap-1 text-center">
           {items.map((item, i) => (
             <div
               key={i}
-              className={`p-1.5 rounded-lg border text-[10px] flex flex-col justify-between ${
+              className={`p-1 rounded-lg border text-[10px] flex flex-col justify-between ${
                 item.color || 'bg-slate-50 border-slate-200'
               }`}
             >
@@ -508,7 +524,7 @@ function renderDiagramContent(
                 e.currentTarget.innerText
               )
             }
-            className="p-1.5 rounded-md bg-amber-100/90 text-amber-950 font-black text-[10px] text-center outline-none focus:bg-amber-200"
+            className="p-1 rounded-md bg-amber-100/90 text-amber-950 font-black text-[10px] text-center outline-none focus:bg-amber-200"
           >
             {diagram.highlightText}
           </div>
@@ -517,15 +533,15 @@ function renderDiagramContent(
     );
   }
 
-  // 4. 불릿 리스트 (패널 5 감리교의 핵심 등)
+  // 4. 불릿 리스트
   if (diagram.type === 'bullet_list') {
     return (
-      <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs">
-        <div className="font-extrabold text-[11px] text-blue-900 border-b border-slate-200 pb-1 mb-1.5 flex items-center gap-1">
+      <div className="p-2 rounded-xl bg-slate-50 border border-slate-200 text-xs">
+        <div className="font-extrabold text-[11px] text-blue-900 border-b border-slate-200 pb-1 mb-1 flex items-center gap-1">
           <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
           <span>{diagram.title || '핵심 원리'}</span>
         </div>
-        <ul className="space-y-1">
+        <ul className="space-y-0.5">
           {(diagram.items || []).map((it, i) => (
             <li
               key={i}
@@ -540,26 +556,26 @@ function renderDiagramContent(
     );
   }
 
-  // 5. 2열 대조 표 (패널 6 장로교 vs 감리교, 패널 7 정통 교파 vs 이단)
+  // 5. 2열 대조 표
   if (diagram.type === 'table_compare') {
     const headers = diagram.tableHeaders || ['장로교', '감리교'];
     const rows = diagram.tableRows || [];
-    const isOrthodoxVsCult = headers[0]?.includes('정통') || headers[1]?.includes('이단');
+    const isOrthodoxVsCult = headers[0]?.includes('정통') || headers[0]?.includes('올바른');
 
     return (
       <div className="rounded-lg overflow-hidden border border-slate-300 text-[10px]">
         {/* 표 헤더 */}
         <div className="grid grid-cols-2 text-center font-black">
           <div
-            className={`p-1.5 ${
-              isOrthodoxVsCult ? 'bg-emerald-600 text-white' : 'bg-blue-600 text-white'
+            className={`p-1 ${
+              isOrthodoxVsCult ? 'bg-blue-600 text-white' : 'bg-blue-600 text-white'
             }`}
           >
             {headers[0]}
           </div>
           <div
-            className={`p-1.5 ${
-              isOrthodoxVsCult ? 'bg-rose-600 text-white' : 'bg-teal-600 text-white'
+            className={`p-1 ${
+              isOrthodoxVsCult ? 'bg-emerald-600 text-white' : 'bg-teal-600 text-white'
             }`}
           >
             {headers[1]}
@@ -603,18 +619,18 @@ function renderDiagramContent(
     );
   }
 
-  // 6. 강조 인용구 (패널 8 정원 비유, 패널 9 최종 결론)
+  // 6. 강조 인용구
   if (diagram.type === 'quote_highlight') {
     return (
-      <div className="p-2.5 rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 text-center">
-        <Quote className="w-4 h-4 text-amber-600 mx-auto mb-1 opacity-70" />
+      <div className="p-2 rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 text-center">
+        <Quote className="w-3.5 h-3.5 text-amber-600 mx-auto mb-0.5 opacity-70" />
         <p
           contentEditable={isEditable}
           suppressContentEditableWarning
           onBlur={(e) =>
             onTextChange(`panels.${panelIdx}.diagram.quoteText`, e.currentTarget.innerText)
           }
-          className="text-xs font-black text-amber-950 leading-snug outline-none focus:bg-white/80 rounded"
+          className="text-[11px] font-black text-amber-950 leading-snug outline-none focus:bg-white/80 rounded"
         >
           {diagram.quoteText}
         </p>
@@ -628,7 +644,7 @@ function renderDiagramContent(
                 e.currentTarget.innerText
               )
             }
-            className="text-[10px] font-bold text-amber-800 mt-1 outline-none focus:bg-white/80 rounded"
+            className="text-[10px] font-bold text-amber-800 mt-0.5 outline-none focus:bg-white/80 rounded"
           >
             {diagram.highlightText}
           </p>
