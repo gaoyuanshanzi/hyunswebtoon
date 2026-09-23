@@ -105,6 +105,15 @@ export function getDefaultDiagramData(type: DiagramType, title = ''): DiagramDat
   }
 }
 
+export type CharacterType = 'boy' | 'girl' | 'man' | 'woman' | 'male' | 'female';
+
+export const CHARACTER_OPTIONS: { value: 'boy' | 'girl' | 'man' | 'woman'; label: string; icon: string; desc: string }[] = [
+  { value: 'boy', label: '남성 (소년)', icon: '👦', desc: '호기심 많고 단정한 청소년 남학생' },
+  { value: 'girl', label: '여성 (소녀)', icon: '👧', desc: '초롱초롱하고 생기 있는 여학생' },
+  { value: 'man', label: '남성 (어른)', icon: '👨', desc: '신뢰감 있고 지적인 남성 전문가/멘토' },
+  { value: 'woman', label: '여성 (어른)', icon: '👩', desc: '단정하고 세련된 여성 전문가/선생님' },
+];
+
 export interface ComicPanel {
   panelNumber: number; // 1 to 9
   title: string;
@@ -117,19 +126,19 @@ export interface ComicPanel {
   imageUrl?: string;
   imagePrompt?: string;
   badgeColor?: string;
-  characterGender?: 'male' | 'female';
+  characterGender?: CharacterType;
 }
 
 export interface ComicHeaderDialogue {
   leftCharacter: {
     name?: string;
     dialogue: string;
-    gender?: 'male' | 'female';
+    gender?: CharacterType;
   };
   rightCharacter: {
     name?: string;
     dialogue: string;
-    gender?: 'male' | 'female';
+    gender?: CharacterType;
   };
 }
 
@@ -141,7 +150,7 @@ export interface ComicProject {
   audience: string;
   author: string;
   sourceNote?: string;
-  characterGender?: 'male' | 'female';
+  characterGender?: CharacterType;
   headerDialogue: ComicHeaderDialogue;
   panels: ComicPanel[];
   createdAt?: string;

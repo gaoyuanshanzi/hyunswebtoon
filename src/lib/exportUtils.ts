@@ -1,44 +1,56 @@
 import { ComicProject } from '@/types/comic';
+import { normalizeCharacterType, CharacterRole } from '@/components/ComicCharacter';
 import { toPng } from 'html-to-image';
 import confetti from 'canvas-confetti';
 
 /**
- * 9가지 포즈 및 성별별 인라인 SVG 문자열 생성기 (HTML 내보내기용)
+ * 9가지 포즈 및 4가지 캐릭터 유형별 인라인 SVG 문자열 생성기 (HTML 내보내기용)
  */
-function getCharacterSvgString(pose: string, gender = 'male', size = 64): string {
-  const isFemale = gender === 'female';
-  const prefix = `${pose}_${gender}`;
+function getCharacterSvgString(pose: string, gender = 'boy', size = 64): string {
+  const role: CharacterRole = normalizeCharacterType(gender as any);
+  const isFemale = role === 'girl' || role === 'woman';
+  const isAdult = role === 'man' || role === 'woman';
+  const prefix = `${pose}_${role}`;
+
+  let jacketGradColors = '<stop offset="0%" stop-color="#2563eb"/><stop offset="100%" stop-color="#1d4ed8"/>';
+  if (role === 'girl') jacketGradColors = '<stop offset="0%" stop-color="#f43f5e"/><stop offset="100%" stop-color="#e11d48"/>';
+  if (role === 'man') jacketGradColors = '<stop offset="0%" stop-color="#1e293b"/><stop offset="100%" stop-color="#0f172a"/>';
+  if (role === 'woman') jacketGradColors = '<stop offset="0%" stop-color="#0d9488"/><stop offset="100%" stop-color="#0f766e"/>';
+
+  let hairGradColors = '<stop offset="0%" stop-color="#334155"/><stop offset="100%" stop-color="#0f172a"/>';
+  if (role === 'girl') hairGradColors = '<stop offset="0%" stop-color="#5c3822"/><stop offset="100%" stop-color="#2c1810"/>';
+  if (role === 'man') hairGradColors = '<stop offset="0%" stop-color="#374151"/><stop offset="100%" stop-color="#111827"/>';
+  if (role === 'woman') hairGradColors = '<stop offset="0%" stop-color="#451a03"/><stop offset="100%" stop-color="#1c1917"/>';
 
   const defs = `
     <defs>
       <linearGradient id="skinGrad_${prefix}" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" stop-color="#fff0e6"/>
+        <stop offset="0%" stop-color="#fff2e8"/>
         <stop offset="100%" stop-color="#ffd8b8"/>
       </linearGradient>
       <linearGradient id="jacketGrad_${prefix}" x1="0%" y1="0%" x2="100%" y2="100%">
-        ${
-          isFemale
-            ? '<stop offset="0%" stop-color="#f43f5e"/><stop offset="100%" stop-color="#e11d48"/>'
-            : '<stop offset="0%" stop-color="#2563eb"/><stop offset="100%" stop-color="#1d4ed8"/>'
-        }
+        ${jacketGradColors}
       </linearGradient>
       <linearGradient id="hairGrad_${prefix}" x1="0%" y1="0%" x2="0%" y2="100%">
-        ${
-          isFemale
-            ? '<stop offset="0%" stop-color="#573420"/><stop offset="100%" stop-color="#2c1810"/>'
-            : '<stop offset="0%" stop-color="#334155"/><stop offset="100%" stop-color="#0f172a"/>'
-        }
+        ${hairGradColors}
       </linearGradient>
     </defs>
   `;
 
-  const bodyBase = `
-    <path d="M 50 128 L 54 160 M 110 128 L 106 160" stroke="#0f172a" stroke-width="6" stroke-linecap="round"/>
-    <path d="M 50 128 L 54 160 M 110 128 L 106 160" stroke="${isFemale ? '#fb7185' : '#475569'}" stroke-width="4" stroke-linecap="round"/>
-    <path d="M 38 160 C 40 125, 60 120, 80 120 C 100 120, 120 125, 122 160 Z" fill="url(#jacketGrad_${prefix})" stroke="#0f172a" stroke-width="3.5" stroke-linejoin="round"/>
-    <path d="M 68 122 C 72 135, 88 135, 92 122 Z" fill="#f8fafc" stroke="#0f172a" stroke-width="2.5"/>
-    <path d="M 64 122 C 68 130, 72 148, 80 160 M 96 122 C 92 130, 88 148, 80 160" stroke="${isFemale ? '#be123c' : '#1e3a8a'}" stroke-width="2"/>
-  `;
+  const bodyBase = isAdult
+    ? `
+      <path d="M 36 160 C 38 122, 60 118, 80 118 C 100 118, 122 122, 124 160 Z" fill="url(#jacketGrad_${prefix})" stroke="#0f172a" stroke-width="3.5" stroke-linejoin="round"/>
+      <path d="M 68 118 L 80 142 L 92 118 Z" fill="#ffffff" stroke="#0f172a" stroke-width="2.5"/>
+      ${role === 'man' ? '<path d="M 77 126 L 83 126 L 82 155 L 80 160 L 78 155 Z" fill="#2563eb" stroke="#0f172a" stroke-width="2"/>' : '<circle cx="80" cy="134" r="2.5" fill="#f59e0b"/>'}
+      <path d="M 62 118 L 74 140 L 70 160 M 98 118 L 86 140 L 90 160" stroke="#0f172a" stroke-width="2.5"/>
+    `
+    : `
+      <path d="M 50 128 L 54 160 M 110 128 L 106 160" stroke="#0f172a" stroke-width="6" stroke-linecap="round"/>
+      <path d="M 50 128 L 54 160 M 110 128 L 106 160" stroke="${role === 'girl' ? '#fb7185' : '#475569'}" stroke-width="4" stroke-linecap="round"/>
+      <path d="M 38 160 C 40 125, 60 120, 80 120 C 100 120, 120 125, 122 160 Z" fill="url(#jacketGrad_${prefix})" stroke="#0f172a" stroke-width="3.5" stroke-linejoin="round"/>
+      <path d="M 68 122 C 72 135, 88 135, 92 122 Z" fill="#f8fafc" stroke="#0f172a" stroke-width="2.5"/>
+      <path d="M 64 122 C 68 130, 72 148, 80 160 M 96 122 C 92 130, 88 148, 80 160" stroke="${role === 'girl' ? '#be123c' : '#1e3a8a'}" stroke-width="2"/>
+    `;
 
   const headBase = (tilt = 0) => `
     <g transform="rotate(${tilt} 80 75)">
@@ -46,13 +58,13 @@ function getCharacterSvgString(pose: string, gender = 'male', size = 64): string
       <ellipse cx="44" cy="80" rx="6" ry="8" fill="url(#skinGrad_${prefix})" stroke="#0f172a" stroke-width="2.5"/>
       <ellipse cx="116" cy="80" rx="6" ry="8" fill="url(#skinGrad_${prefix})" stroke="#0f172a" stroke-width="2.5"/>
       <path d="M 46 68 C 44 95, 60 114, 80 114 C 100 114, 116 95, 114 68 C 114 45, 46 45, 46 68 Z" fill="url(#skinGrad_${prefix})" stroke="#0f172a" stroke-width="3.5"/>
-      <circle cx="56" cy="88" r="${isFemale ? 8 : 7}" fill="#f43f5e" opacity="${isFemale ? '0.45' : '0.3'}"/>
-      <circle cx="104" cy="88" r="${isFemale ? 8 : 7}" fill="#f43f5e" opacity="${isFemale ? '0.45' : '0.3'}"/>
+      <circle cx="56" cy="88" r="${isFemale ? 8 : 6.5}" fill="#f43f5e" opacity="${isFemale ? '0.45' : '0.3'}"/>
+      <circle cx="104" cy="88" r="${isFemale ? 8 : 6.5}" fill="#f43f5e" opacity="${isFemale ? '0.45' : '0.3'}"/>
     </g>
   `;
 
   const hair = (tilt = 0) => {
-    if (isFemale) {
+    if (role === 'girl') {
       return `
         <g transform="rotate(${tilt} 80 75)">
           <path d="M 115 50 C 135 45, 142 65, 135 85 C 130 92, 122 85, 120 75 Z" fill="url(#hairGrad_${prefix})" stroke="#0f172a" stroke-width="3"/>
@@ -63,6 +75,23 @@ function getCharacterSvgString(pose: string, gender = 'male', size = 64): string
         </g>
       `;
     }
+    if (role === 'woman') {
+      return `
+        <g transform="rotate(${tilt} 80 75)">
+          <path d="M 38 72 C 34 45, 52 25, 80 25 C 108 25, 126 45, 122 72 C 122 88, 124 98, 120 102 C 116 94, 115 80, 114 65 C 108 40, 95 32, 80 32 C 65 32, 52 40, 46 65 C 45 80, 44 94, 40 102 C 36 98, 38 88, 38 72 Z" fill="url(#hairGrad_${prefix})" stroke="#0f172a" stroke-width="3"/>
+          <path d="M 42 60 C 50 68, 62 65, 72 68 C 76 56, 92 52, 114 58 C 110 40, 98 32, 80 32 C 60 32, 46 42, 42 60 Z" fill="url(#hairGrad_${prefix})" stroke="#0f172a" stroke-width="2.5"/>
+        </g>
+      `;
+    }
+    if (role === 'man') {
+      return `
+        <g transform="rotate(${tilt} 80 75)">
+          <path d="M 42 68 C 38 46, 56 26, 80 26 C 104 26, 122 46, 118 68 C 116 75, 118 80, 116 84 C 114 78, 114 66, 112 60 C 108 42, 96 34, 80 34 C 64 34, 52 42, 48 60 C 46 66, 46 78, 44 84 C 42 80, 44 75, 42 68 Z" fill="url(#hairGrad_${prefix})" stroke="#0f172a" stroke-width="3"/>
+          <path d="M 44 56 C 54 62, 66 60, 74 63 C 78 54, 94 50, 114 55 C 110 38, 96 32, 80 32 C 62 32, 48 40, 44 56 Z" fill="url(#hairGrad_${prefix})" stroke="#0f172a" stroke-width="2.5"/>
+        </g>
+      `;
+    }
+    // boy
     return `
       <g transform="rotate(${tilt} 80 75)">
         <path d="M 40 70 C 35 45, 55 25, 80 25 C 105 25, 125 45, 120 70 C 118 78, 122 84, 120 88 C 116 80, 116 65, 114 60 C 110 40, 95 32, 80 32 C 65 32, 50 40, 46 60 C 44 65, 44 80, 40 88 C 38 84, 42 78, 40 70 Z" fill="url(#hairGrad_${prefix})" stroke="#0f172a" stroke-width="3"/>

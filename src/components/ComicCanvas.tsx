@@ -2,7 +2,8 @@
 
 import React, { useRef, useState } from 'react';
 import { ComicProject, ComicPanel, DiagramType, DiagramData, getDefaultDiagramData } from '@/types/comic';
-import ComicCharacter, { getCharacterPoseForPanel, CharacterGender } from './ComicCharacter';
+import ComicCharacter, { getCharacterPoseForPanel, CharacterRole, normalizeCharacterType } from './ComicCharacter';
+import { CHARACTER_OPTIONS } from '@/types/comic';
 import { 
   Sparkles, RefreshCw, Edit2, Download, 
   Share2, ZoomIn, ZoomOut, ShieldCheck, 
@@ -28,28 +29,31 @@ export default function ComicCanvas({
   const [isEditable, setIsEditable] = useState<boolean>(true);
   const [isRegeneratingImage, setIsRegeneratingImage] = useState<number | null>(null);
 
-  // 전역 캐릭터 성별 (기본: male)
-  const globalGender: CharacterGender = comic.characterGender || 'male';
+  // 전역 캐릭터 유형 (boy, girl, man, woman)
+  const globalRole: CharacterRole = normalizeCharacterType(comic.characterGender);
 
-  const handleToggleGlobalGender = () => {
-    const nextGender: CharacterGender = globalGender === 'male' ? 'female' : 'male';
+  const handleSelectGlobalCharacter = (newRole: CharacterRole) => {
     const updated = {
       ...comic,
-      characterGender: nextGender,
-      // 모든 패널의 개별 성별도 함께 일괄 적용
-      panels: comic.panels.map((p) => ({ ...p, characterGender: nextGender })),
+      characterGender: newRole,
+      panels: comic.panels.map((p) => ({ ...p, characterGender: newRole })),
     };
     onUpdateComic(updated);
   };
 
-  // 개별 패널 성별 토글
-  const handleTogglePanelGender = (panelIdx: number) => {
-    const current = comic.panels[panelIdx].characterGender || globalGender;
-    const next: CharacterGender = current === 'male' ? 'female' : 'male';
+  // 개별 패널 캐릭터 토글 (boy -> girl -> man -> woman 순환)
+  const handleCyclePanelCharacter = (panelIdx: number) => {
+    const currentRole: CharacterRole = normalizeCharacterType(
+      comic.panels[panelIdx].characterGender || comic.characterGender
+    );
+    const order: CharacterRole[] = ['boy', 'girl', 'man', 'woman'];
+    const nextIdx = (order.indexOf(currentRole) + 1) % order.length;
+    const nextRole = order[nextIdx];
+
     const updatedPanels = [...comic.panels];
     updatedPanels[panelIdx] = {
       ...updatedPanels[panelIdx],
-      characterGender: next,
+      characterGender: nextRole,
     };
     onUpdateComic({ ...comic, panels: updatedPanels });
   };
@@ -141,16 +145,25 @@ export default function ComicCanvas({
             [3단계] 최종 9컷 만화 캔버스
           </div>
 
-          {/* 남성 / 여성 캐릭터 전역 전환 버튼 */}
-          <button
-            onClick={handleToggleGlobalGender}
-            className="px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-xs font-bold text-slate-800 transition-all flex items-center gap-1.5 shadow-2xs"
-            title="캐릭터 성별 전체 변경"
-          >
-            <span className="text-base">{globalGender === 'female' ? '👧' : '👦'}</span>
-            <span>캐릭터: <strong>{globalGender === 'female' ? '여성(소녀)' : '남성(소년)'}</strong></span>
-            <span className="text-[10px] text-blue-600 bg-blue-100/70 px-1.5 py-0.5 rounded">클릭 시 전환</span>
-          </button>
+          {/* 4가지 캐릭터 선택기 (소년, 소녀, 남성 어른, 여성 어른) */}
+          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
+            <span className="text-[11px] font-bold text-slate-500 px-1.5 hidden sm:inline">캐릭터:</span>
+            {CHARACTER_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => handleSelectGlobalCharacter(opt.value)}
+                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
+                  globalRole === opt.value
+                    ? 'bg-white text-blue-600 shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+                }`}
+                title={opt.desc}
+              >
+                <span>{opt.icon}</span>
+                <span className="text-[11px]">{opt.label}</span>
+              </button>
+            ))}
+          </div>
 
           <button
             onClick={() => setIsEditable(!isEditable)}
@@ -231,11 +244,9 @@ export default function ComicCanvas({
             {/* 좌측 캐릭터 & 질문 */}
             <div className="col-span-3 flex items-center gap-2">
               <div 
-                onClick={handleToggleGlobalGender}
-                className="w-18 h-18 rounded-2xl bg-gradient-to-b from-blue-50 to-slate-100 border-2 border-slate-900 overflow-hidden shrink-0 flex items-center justify-center relative shadow-xs p-1 cursor-pointer hover:ring-2 hover:ring-blue-400 transition-all"
-                title="클릭하여 남/여 캐릭터 전환"
+                className="w-18 h-18 rounded-2xl bg-gradient-to-b from-blue-50 to-slate-100 border-2 border-slate-900 overflow-hidden shrink-0 flex items-center justify-center relative shadow-xs p-1"
               >
-                <ComicCharacter pose="curious" gender={globalGender} size={70} />
+                <ComicCharacter pose="curious" gender={globalRole} size={70} />
               </div>
               <div className="speech-bubble speech-bubble-tail-left p-2.5 text-xs font-bold leading-snug text-slate-800 max-w-[200px]">
                 <p
@@ -306,11 +317,9 @@ export default function ComicCanvas({
                 </p>
               </div>
               <div 
-                onClick={handleToggleGlobalGender}
-                className="w-18 h-18 rounded-2xl bg-gradient-to-b from-blue-50 to-indigo-100 border-2 border-slate-900 overflow-hidden shrink-0 flex items-center justify-center relative shadow-xs p-1 cursor-pointer hover:ring-2 hover:ring-blue-400 transition-all"
-                title="클릭하여 남/여 캐릭터 전환"
+                className="w-18 h-18 rounded-2xl bg-gradient-to-b from-blue-50 to-indigo-100 border-2 border-slate-900 overflow-hidden shrink-0 flex items-center justify-center relative shadow-xs p-1"
               >
-                <ComicCharacter pose="explaining" gender={globalGender} size={70} />
+                <ComicCharacter pose="explaining" gender={globalRole} size={70} />
               </div>
             </div>
           </div>
@@ -324,10 +333,10 @@ export default function ComicCanvas({
                 key={panel.panelNumber || idx}
                 panel={panel}
                 panelIdx={idx}
-                globalGender={globalGender}
+                globalRole={globalRole}
                 isEditable={isEditable}
                 onTextChange={handleTextChange}
-                onTogglePanelGender={handleTogglePanelGender}
+                onCycleCharacter={handleCyclePanelCharacter}
                 onChangeDiagramType={handleChangeDiagramType}
                 onDeleteDiagram={handleDeleteDiagram}
                 onAddDiagramItem={handleAddDiagramItem}
@@ -353,10 +362,10 @@ export default function ComicCanvas({
 interface PanelCardProps {
   panel: ComicPanel;
   panelIdx: number;
-  globalGender: CharacterGender;
+  globalRole: CharacterRole;
   isEditable: boolean;
   onTextChange: (path: string, val: string) => void;
-  onTogglePanelGender: (idx: number) => void;
+  onCycleCharacter: (idx: number) => void;
   onChangeDiagramType: (idx: number, type: DiagramType) => void;
   onDeleteDiagram: (idx: number) => void;
   onAddDiagramItem: (idx: number) => void;
@@ -366,10 +375,10 @@ interface PanelCardProps {
 function PanelCard({
   panel,
   panelIdx,
-  globalGender,
+  globalRole,
   isEditable,
   onTextChange,
-  onTogglePanelGender,
+  onCycleCharacter,
   onChangeDiagramType,
   onDeleteDiagram,
   onAddDiagramItem,
@@ -378,9 +387,9 @@ function PanelCard({
   const numberBadges = ['❶', '❷', '❸', '❹', '❺', '❻', '❼', '❽', '❾'];
   const badge = numberBadges[panel.panelNumber - 1] || `[${panel.panelNumber}]`;
 
-  // 캐릭터 포즈 및 성별 결정
+  // 캐릭터 포즈 및 성별 결정 (소년, 소녀, 남성 어른, 여성 어른)
   const characterPose = getCharacterPoseForPanel(panel.panelNumber);
-  const panelGender: CharacterGender = panel.characterGender || globalGender;
+  const panelRole: CharacterRole = normalizeCharacterType(panel.characterGender || globalRole);
 
   const [showDiagramMenu, setShowDiagramMenu] = useState(false);
 
@@ -494,14 +503,14 @@ function PanelCard({
         {/* 4. [만화 캐릭터 + 말풍선 결합 영역] */}
         {/* 말풍선 꼬리표가 왼쪽의 캐릭터 입/얼굴을 명확히 가리키도록 speech-bubble-tail-left 적용! */}
         <div className="pt-1.5 border-t border-slate-100 flex items-end gap-2.5">
-          {/* 캐릭터 아바타 (클릭 시 남/여 개별 토글 가능) */}
+          {/* 캐릭터 아바타 (클릭 시 4가지 캐릭터 순환 전환: 소년 -> 소녀 -> 남성 어른 -> 여성 어른) */}
           <div
-            onClick={() => onTogglePanelGender(panelIdx)}
+            onClick={() => onCycleCharacter(panelIdx)}
             className="relative group shrink-0 cursor-pointer"
-            title="클릭하여 이 컷의 캐릭터 남/여 전환"
+            title="클릭하여 캐릭터 전환 (소년/소녀/남성 어른/여성 어른)"
           >
             <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-slate-50 border border-slate-300 overflow-hidden flex items-center justify-center p-0.5 shadow-2xs group-hover:border-blue-400 group-hover:shadow-md transition-all">
-              <ComicCharacter pose={characterPose} gender={panelGender} size={78} />
+              <ComicCharacter pose={characterPose} gender={panelRole} size={78} />
             </div>
             {isEditable && (
               <div className="absolute -top-1.5 -right-1.5 bg-white border border-slate-300 rounded-full p-0.5 shadow text-[9px] font-bold text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity">
